@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base
 from advert_database import AdvertDatabase
+from html_parser import HtmlParser
 
 
 def construct_database_url(config):
@@ -47,7 +48,6 @@ def create_advert_database(advert_database):
         logging.info('Database created!')
 
 
-
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO, handlers=[
         logging.FileHandler(filename="fb-notifier.log", mode='w'),
@@ -64,12 +64,15 @@ if __name__ == "__main__":
             advert_database = setup_database(config)
             create_advert_database(advert_database)
 
-            fb_conf = config.get('facebook')
-            email = fb_conf.get('email')
-            password = fb_conf.get('password')
-            friend_id = fb_conf.get('friend_id')
-            text = "Test MESSAGE"
-            client = fbchat.Client(email, password) 
-            client.send(Message(text=text), thread_id=friend_id, thread_type=ThreadType.USER)
-            client.logout()
-            
+            html = HtmlParser("https://www.olx.pl/motoryzacja/samochody/bmw/q-m-pakiet/?search%5Bfilter_float_price%3Ato%5D=5000&search%5Bfilter_enum_model%5D%5B0%5D=3-as-sorozat&search%5Bfilter_enum_car_body%5D%5B0%5D=estate-car", "olx")
+            html.parse_page_content(advert_database)
+
+
+            # fb_conf = config.get('facebook')
+            # email = fb_conf.get('email')
+            # password = fb_conf.get('password')
+            # friend_id = fb_conf.get('friend_id')
+            # text = "Test MESSAGE"
+            # client = fbchat.Client(email, password) 
+            # client.send(Message(text=text), thread_id=friend_id, thread_type=ThreadType.USER)
+            # client.logout()
