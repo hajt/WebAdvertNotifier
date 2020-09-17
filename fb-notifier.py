@@ -1,5 +1,7 @@
 import yaml
 import logging
+import fbchat
+from fbchat.models import Message, ThreadType
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -51,6 +53,7 @@ if __name__ == "__main__":
         logging.FileHandler(filename="fb-notifier.log", mode='w'),
         logging.StreamHandler()
     ])
+    logging.getLogger("client").setLevel(logging.INFO)
 
     with open("config.yaml", 'r') as config_file:
         try:
@@ -60,3 +63,13 @@ if __name__ == "__main__":
         else:
             advert_database = setup_database(config)
             create_advert_database(advert_database)
+
+            fb_conf = config.get('facebook')
+            email = fb_conf.get('email')
+            password = fb_conf.get('password')
+            friend_id = fb_conf.get('friend_id')
+            text = "Test MESSAGE"
+            client = fbchat.Client(email, password) 
+            client.send(Message(text=text), thread_id=friend_id, thread_type=ThreadType.USER)
+            client.logout()
+            
