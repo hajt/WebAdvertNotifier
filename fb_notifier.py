@@ -17,8 +17,8 @@ def construct_database_url(config):
         logging.error("No database config data section in config file.")
         raise KeyError("No such key 'database' in config file")
     else:
-        name = database.get('name')
-        database_url = f"sqlite:///{name}"
+        path = database.get('path')
+        database_url = f"sqlite:///{path}"
         return database_url
 
 
@@ -48,6 +48,20 @@ def create_advert_database(advert_database):
         logging.info('Database created!')
 
 
+def scan_filters_for_new_adverts(config, advert_database):
+    """ Function which scan given website filters for new adverts,
+    and updates the database. """
+    filters = config.get('filters')
+    if filters is None:
+        logging.error("No filters found in config file.")
+        raise KeyError("No such key 'filters' in config file")
+    else:
+        for portal, links in filters.items():
+            for link in links:
+                html_parser = HtmlParser(link, portal)
+                html_parser.parse_page_content(advert_database)
+
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO, handlers=[
         logging.FileHandler(filename="fb-notifier.log", mode='w'),
@@ -63,9 +77,7 @@ if __name__ == "__main__":
         else:
             advert_database = setup_database(config)
             create_advert_database(advert_database)
-
-            html = HtmlParser("https://www.olx.pl/motoryzacja/samochody/bmw/q-m-pakiet/?search%5Bfilter_float_price%3Ato%5D=5000&search%5Bfilter_enum_model%5D%5B0%5D=3-as-sorozat&search%5Bfilter_enum_car_body%5D%5B0%5D=estate-car", "olx")
-            html.parse_page_content(advert_database)
+            scan_filters_for_new_adverts(config, advert_database)
 
 
             # fb_conf = config.get('facebook')
