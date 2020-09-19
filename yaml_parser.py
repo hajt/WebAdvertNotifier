@@ -65,67 +65,72 @@ class YamlParser:
         key = 'database'
         database = self.content.get(key)
         self._validate_is_dict(database)
-        self.database = database    
+        return database    
         
 
     def _get_database_path(self):
         key = 'path'
-        path = self.database.get(key)
+        database = self._get_database_config()
+        path = database.get(key)
         self._validate_is_string(path)
-        self.path = path
+        return path
                 
 
     def _get_facebook_config(self):
         key = 'facebook'
         facebook = self.content.get(key)    
         self._validate_is_dict(facebook)
-        self.facebook = facebook 
+        return facebook 
 
 
     def _get_facebook_email(self):
         key = 'email'
-        email = self.facebook.get(key)
+        facebook = self._get_facebook_config()
+        email = facebook.get(key)
         self._validate_is_string(email)
-        self.email = email
+        return email
 
 
     def _get_facebook_password(self):
         key = 'password'
-        password = self.facebook.get(key)
+        facebook = self._get_facebook_config()
+        password = facebook.get(key)
         self._validate_is_string(password)
-        self.password = password
+        return password
 
 
     def _get_facebook_friend_id(self):
         key = 'friend_id'
-        friend_id = self.facebook.get(key)
+        facebook = self._get_facebook_config()
+        friend_id = facebook.get(key)
         self._validate_is_int(friend_id)
-        self.friend_id = friend_id
+        return friend_id
 
 
     def _get_filters_data(self):
         key = 'filters'
         filters = self.content.get(key)    
         self._validate_is_dict(filters)
-        self.filters = filters 
+        return filters 
 
 
     def _get_olx_filters(self):
         key = 'olx'
-        olx = self.filters.get(key)
+        filters = self._get_filters_data()
+        olx = filters.get(key)
         self._validate_is_list(olx)
-        self.olx = olx
+        return olx
 
 
     def _parse_content(self):
-        self._get_database_config()
-        self._get_database_path()
-        self._get_facebook_config()
-        self._get_facebook_email()
-        self._get_facebook_password()
-        self._get_facebook_friend_id()
-        self._get_filters_data()
-        self._get_olx_filters()
+        self.database = self._get_database_config()
+        self.database_path = self._get_database_path()
+        self.facebook = self._get_facebook_config()
+        self.facebook_email = self._get_facebook_email()
+        self.facebook_password = self._get_facebook_password()
+        self.facebook_friend_id = self._get_facebook_friend_id()
+        self.filters = self._get_filters_data()
+        self.olx_filters = self._get_olx_filters()
 
 
 if __name__ == "__main__":
