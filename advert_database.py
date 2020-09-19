@@ -26,11 +26,12 @@ class AdvertDatabase:
         """ Function which inserts new advert into database, when it doesn't exist. """
         advert = self._get_advert_by_url(link.url)
         if not advert:
+            logging.info(f"Found new advert: {link.name} - '{link.url}'" )
             advert = Advert(name=link.name, url=link.url)
             self.session.add(advert)
             try:
                 self.session.commit()
-                logging.info(f"Inserted new advert '{link.url}'.")
+                logging.info(f"Inserted advert into database '{link.url}'")
             except sqlalchemy.exc.IntegrityError:
                 self.session.rollback()
                 logging.error(f"There is already same advert in 'adverts' table.\nInvolved url: '{link.url}'")
