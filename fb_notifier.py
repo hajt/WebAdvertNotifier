@@ -8,34 +8,24 @@ from sqlalchemy.orm import sessionmaker
 from models import Base
 from advert_database import AdvertDatabase
 from html_parser import HtmlParser
+from yaml_parser import YamlParser
 
 
 def construct_database_url(config):
     """ Function which returns database url from config data. """
-    database = config.get('database')    
-    if database is None:
-        logging.error("No database config data section in config file.")
-        raise KeyError("No such key 'database' in config file")
-    else:
-        path = database.get('path')
-        database_url = f"sqlite:///{path}"
-        return database_url
+    database_url = f"sqlite:///{config.database_path}"
+    return database_url
 
 
 def setup_database(config):
     """ Function which configure database settings, and returns 
     database_url, engine and session objects. """
-    database_url = construct_database_url(config)
-    if database_url is None:
-        logging.error("Wrong 'database_url' type.")
-        raise TypeError("'database_url' is 'NoneType', but should be 'str'")
-    else:                
-        engine = create_engine(database_url, echo=True)
-            
-        Session = sessionmaker(bind=engine)
-        session = Session() 
-        advert_database = AdvertDatabase(database_url, engine, session)
-        return advert_database
+    database_url = construct_database_url(config)          
+    engine = create_engine(database_url, echo=False)
+    Session = sessionmaker(bind=engine)
+    session = Session() 
+    advert_database = AdvertDatabase(database_url, engine, session)
+    return advert_database
 
 
 def create_advert_database(advert_database):
@@ -51,15 +41,10 @@ def create_advert_database(advert_database):
 def scan_filters_for_new_adverts(config, advert_database):
     """ Function which scan given website filters for new adverts,
     and updates the database. """
-    filters = config.get('filters')
-    if filters is None:
-        logging.error("No filters found in config file.")
-        raise KeyError("No such key 'filters' in config file")
-    else:
-        for portal, links in filters.items():
-            for link in links:
-                html_parser = HtmlParser(link, portal)
-                html_parser.parse_page_content(advert_database)
+    for portal, links in config.filters.items():
+        for link in links:
+            html_parser = HtmlParser(link, portal)
+            html_parser.parse_page_content(advert_database)
 
 
 if __name__ == "__main__":
@@ -69,22 +54,16 @@ if __name__ == "__main__":
     ])
     logging.getLogger("client").setLevel(logging.INFO)
 
-    with open("config.yaml", 'r') as config_file:
-        try:
-            config = yaml.full_load(config_file)
-        except yaml.YAMLError as err:
-            logging.exception(err)
-        else:
-            advert_database = setup_database(config)
-            create_advert_database(advert_database)
-            scan_filters_for_new_adverts(config, advert_database)
+    config = YamlParser("config.yaml")
+    advert_database = setup_database(config)
+    create_advert_database(advert_database)
+    scan_filters_for_new_adverts(config, advert_database)
 
-
-            # fb_conf = config.get('facebook')
-            # email = fb_conf.get('email')
-            # password = fb_conf.get('password')
-            # friend_id = fb_conf.get('friend_id')
-            # text = "Test MESSAGE"
-            # client = fbchat.Client(email, password) 
-            # client.send(Message(text=text), thread_id=friend_id, thread_type=ThreadType.USER)
-            # client.logout()
+    # fb_conf = config.get('facebook')
+    # email = fb_conf.get('email')
+    # password = fb_conf.get('password')
+    # friend_id = fb_conf.get('friend_id')
+    # text = "Test MESSAGE"
+    # client = fbchat.Client(email, password) 
+    # client.send(Message(text=text), thread_id=friend_id, thread_type=ThreadType.USER)
+    # client.logout()
