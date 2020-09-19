@@ -3,3 +3,4 @@ __pycache__
 config.yaml
 fb-notifier.log
 fb-notifier.db
+todo.txt
