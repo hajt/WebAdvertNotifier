@@ -1,18 +1,19 @@
 import yaml
+from jsonschema import validate
 import logging
 
 class YamlParser:
 
     def __init__(self, path):
+
         try:
             with open(path, 'r') as file:
                 try:
                     content = yaml.full_load(file)
                 except yaml.YAMLError as err:
-                    logging.exception(err)
+                    logging.error(err)
                 else:
-                    self.content = content
-                    self._validate_content()
+                    self.content = self._validate_config_file(content)
                     self._parse_content()
         except FileNotFoundError:
             logging.error(f"No such file or directory: '{path}'")
@@ -34,6 +35,12 @@ class YamlParser:
         if database is None:
             logging.error("No database config data in config file.")
             raise TypeError(f"'{key}' is 'NoneType' object, should be dict()")
+        elif type(database) is type(str()):
+            logging.error("Wrong format of database config data in config file.")
+            raise TypeError(f"'{key}' is str() object, should be dict()")
+        elif type(database) is type(list()):
+            logging.error("Wrong format of database config data in config file.")
+            raise TypeError(f"'{key}' is list() object, should be dict()")
         else:
             return database
 
@@ -41,7 +48,6 @@ class YamlParser:
     def _get_database_path(self):
         key = 'path'
         database = self._get_database_config()
-        # print(type(database))
         path = database.get(key)
         if path is None:
             logging.error("No database path in config file.")
@@ -114,16 +120,21 @@ class YamlParser:
             return olx
 
 
-    def _validate_content(self):
-        if self.content is None:
+    def _validate_config_file(self, content):
+        if content is None:
             logging.error("No config data in config file.")
-            raise TypeError(f"'self.content' is 'NoneType' object, should be dict()")
-        elif type(self.content) is type(str()):
+            raise TypeError(f"'NoneType' object, should be dict()")
+        elif type(content) is type(str()):
             logging.error("Wrong format of config data in config file.")
-            raise TypeError(f"'self.content' is str() object, should be dict()")
-        elif type(self.content) is type(list()):
+            raise TypeError(f"str() object, should be dict()")
+        elif type(content) is type(list()):
             logging.error("Wrong format of config data in config file.")
-            raise TypeError(f"'self.content' is list() object, should be dict()")
+            raise TypeError(f"list() object, should be dict()")
+        elif type(content) is type(dict()):
+            return content
+        else:
+            logging.error("Unknown format of config data in config file.")
+            return {}
 
 
     def _parse_content(self):
