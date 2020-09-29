@@ -1,6 +1,7 @@
 __pycache__
 .vscode
 config.yaml
-fb-notifier.log
-fb-notifier.db
+notifier.log
+notifier.db
+utils.py
 todo.txt
