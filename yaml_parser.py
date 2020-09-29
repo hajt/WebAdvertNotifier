@@ -61,6 +61,21 @@ class YamlParser:
             raise TypeError(f"'{type(target).__name__}' object, should be 'list'")
 
 
+    def _get_slack_config(self):
+        key = 'slack'
+        slack = self.content.get(key)
+        self._validate_is_dict(slack)
+        return slack 
+
+    
+    def _get_slack_webhook_url(self):
+        key = 'webhook_url'
+        slack = self._get_slack_config()
+        webhook_url = slack.get(key)
+        self._validate_is_string(webhook_url)
+        return webhook_url  
+
+
     def _get_database_config(self):
         key = 'database'
         database = self.content.get(key)
@@ -123,6 +138,8 @@ class YamlParser:
 
 
     def _parse_content(self):
+        self.slack = self._get_slack_config()
+        self.slack_webhook_url = self._get_slack_webhook_url()
         self.database = self._get_database_config()
         self.database_path = self._get_database_path()
         self.facebook = self._get_facebook_config()

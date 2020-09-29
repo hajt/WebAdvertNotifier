@@ -36,9 +36,9 @@ class HtmlParser:
         return links
 
 
-    def parse_page_content(self, advert_database):
+    def parse_page_content(self, advert_database, slack):
         content = self._fetch_page_content()
         if self.portal == 'olx':
             links = self._get_anchor_links(content)
             for link in links:
-                advert_database.insert_new_advert(link)
+                advert_database.insert_new_advert_and_send_notification(link, slack)

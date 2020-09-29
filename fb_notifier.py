@@ -1,7 +1,4 @@
-import yaml
 import logging
-import fbchat
-from fbchat.models import Message, ThreadType
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -9,6 +6,7 @@ from models import Base
 from advert_database import AdvertDatabase
 from html_parser import HtmlParser
 from yaml_parser import YamlParser
+from slack import Slack
 
 
 def construct_database_url(config):
@@ -28,6 +26,12 @@ def setup_database(config):
     return advert_database
 
 
+def setup_slack(config):
+    """ Function which configure Slack to send messages. """
+    slack = Slack(config.slack_webhook_url)
+    return slack
+
+
 def create_advert_database(advert_database):
     """ Function which creates the database if doesn't exist
     and fill her with users and email accounts. """
@@ -38,13 +42,13 @@ def create_advert_database(advert_database):
         logging.info('Database created!')
 
 
-def scan_filters_for_new_adverts(config, advert_database):
+def scan_filters_for_new_adverts(config, advert_database, slack):
     """ Function which scan given website filters for new adverts,
     and updates the database. """
     for portal, links in config.filters.items():
         for link in links:
             html_parser = HtmlParser(link, portal)
-            html_parser.parse_page_content(advert_database)
+            html_parser.parse_page_content(advert_database, slack)
 
 
 if __name__ == "__main__":
@@ -56,14 +60,6 @@ if __name__ == "__main__":
 
     config = YamlParser("config.yaml")
     advert_database = setup_database(config)
+    slack = setup_slack(config)
     create_advert_database(advert_database)
-    scan_filters_for_new_adverts(config, advert_database)
-
-    # fb_conf = config.get('facebook')
-    # email = fb_conf.get('email')
-    # password = fb_conf.get('password')
-    # friend_id = fb_conf.get('friend_id')
-    # text = "Test MESSAGE"
-    # client = fbchat.Client(email, password) 
-    # client.send(Message(text=text), thread_id=friend_id, thread_type=ThreadType.USER)
-    # client.logout()
+    scan_filters_for_new_adverts(config, advert_database, slack)
