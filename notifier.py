@@ -52,13 +52,14 @@ def scan_filters_for_new_adverts(config, advert_database, slack):
 
 
 if __name__ == "__main__":
+    config = YamlParser("config.yaml")
+
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO, handlers=[
-        logging.FileHandler(filename="fb-notifier.log", mode='w'),
+        logging.FileHandler(filename=config.logfile_path, mode='w'),
         logging.StreamHandler()
     ])
     logging.getLogger("client").setLevel(logging.INFO)
 
-    config = YamlParser("config.yaml")
     advert_database = setup_database(config)
     slack = setup_slack(config)
     create_advert_database(advert_database)

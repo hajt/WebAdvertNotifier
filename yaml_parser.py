@@ -76,6 +76,21 @@ class YamlParser:
         return webhook_url  
 
 
+    def _get_logfile_config(self):
+        key = 'logfile'
+        logfile = self.content.get(key)
+        self._validate_is_dict(logfile)
+        return logfile    
+        
+
+    def _get_logfile_path(self):
+        key = 'path'
+        logfile = self._get_logfile_config()
+        path = logfile.get(key)
+        self._validate_is_string(path)
+        return path
+
+
     def _get_database_config(self):
         key = 'database'
         database = self.content.get(key)
@@ -140,6 +155,8 @@ class YamlParser:
     def _parse_content(self):
         self.slack = self._get_slack_config()
         self.slack_webhook_url = self._get_slack_webhook_url()
+        self.logfile = self._get_logfile_config()
+        self.logfile_path = self._get_logfile_path()
         self.database = self._get_database_config()
         self.database_path = self._get_database_path()
         self.facebook = self._get_facebook_config()
