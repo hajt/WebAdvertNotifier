@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 Base = declarative_base()
 
 class Advert(Base):
-    """ Database 'servers' table model class. """ 
+    """ Database 'adverts' table model class. """ 
     __tablename__ = 'adverts'
 
     id = Column(Integer, primary_key=True)

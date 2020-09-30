@@ -6,7 +6,7 @@ import logging
 class YamlParser:
 
     def __init__(self, path):
-
+        """ Config Yaml file parser class. """ 
         self.content = None
         self.slack_webhook_url = ""
         self.logfile_path = ""
