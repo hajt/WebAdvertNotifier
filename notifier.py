@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from models import Base
 from advert_database import AdvertDatabase
 from html_parser import HtmlParser
-from yaml_parser import YamlParser
+from config import ConfigFile
 from slack import Slack
 
 
@@ -48,11 +48,11 @@ def scan_filters_for_new_adverts(config, advert_database, slack):
     for portal, links in config.filters.items():
         for link in links:
             html_parser = HtmlParser(link, portal)
-            html_parser.parse_page_content(advert_database, slack)
+            html_parser.parse_and_proccess_page_content(advert_database, slack)
 
 
 if __name__ == "__main__":
-    config = YamlParser("config.yaml")
+    config = ConfigFile("config.yaml")
 
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO, handlers=[
         logging.FileHandler(filename=config.logfile_path, mode='w'),
