@@ -1,46 +1,49 @@
 import requests
 import re
 from bs4 import BeautifulSoup
+from dataclasses import dataclass
 
+@dataclass
 class Link:
+    """ Url link joiner with the name. """ 
 
-    def __init__(self, url, name):
-        """ Url link joiner with the name. """ 
-        self.url = url
-        self.name = name
+    url: str
+    name: str
 
 
-    def __str__(self):
-        return f"{self.name}: '{self.url}'"
+    def __str__(self) -> str:
+        return f"Name: {self.name}, Url: '{self.url}'"
 
 
 class HtmlParser:
 
-    def __init__(self, url, portal):
+    def __init__(self, url, portal: str) -> None:
         """ HTML page content parser. """ 
         self.url = url
         self.portal = portal
 
     
-    def _fetch_page_content(self):
+    def _fetch_page_content(self) -> BeautifulSoup:
         """ Function which fetchs HTML page content. """
         request = requests.get(self.url)
         content = BeautifulSoup(request.text, "html.parser")
         return content
 
 
-    def _find_no_adverts_div(self, content):
+    def _find_no_adverts_div(self, content: BeautifulSoup):
         """ Function which search for 'no adverts' div in HTML page content. """
         return content.find_all('div', {'class': 'emptynew'})
 
 
-    def _find_no_adverts_text(self, content):
+    def _find_no_adverts_text(self, content: BeautifulSoup):
         """ Function which search for all 'no adverts' known 
         text in HTML page content. """
-        return content.find_all(string=[re.compile("Nie znaleźliśmy ogłoszeń dla tego zapytania."), re.compile("Sprawdź poprawność albo spróbuj bardziej ogólnego zapytania")])
+        not_found = re.compile("Nie znaleźliśmy ogłoszeń dla tego zapytania.")
+        validate_query = re.compile("Sprawdź poprawność albo spróbuj bardziej ogólnego zapytania")
+        return content.find_all(string=[not_found, validate_query])
 
 
-    def _check_are_matching_adverts(self, content):
+    def _check_are_matching_olx_adverts(self, content: BeautifulSoup):
         """ Function which checks are matching adverts in HTML page content 
         by checking are 'no adverts div' or 'no adverts text' and returns 
         'True' when not. """
@@ -52,7 +55,7 @@ class HtmlParser:
             return True
 
 
-    def _find_adverts_divs(self, content):
+    def _find_adverts_divs(self, content: BeautifulSoup):
         """ Function which search for all adverts divs in HTML page content. """
         return content.find_all('div', {'class': "offer-wrapper"})
 
@@ -62,34 +65,39 @@ class HtmlParser:
         return div.find('a', {'href': True, 'class': True, 'title': False})
 
     
-    def _get_advert_url_and_name(self, anhor):
+    def _get_advert_url_and_name(self, anhor) -> tuple:
         """ Function which gets url and name from the anhor. """
         url = anhor['href']
         name = anhor.text.strip()
         return url, name
         
 
-    def _get_olx_adverts_links(self, content):
-        """ Function which checks are mathing adverts in HTML page content,
-        extracts anchor links, creates Link object with connected url and name,
-        of the advert, and returns a list of all found andverts. """
+    def _get_olx_adverts_links(self, content: BeautifulSoup) -> list:
+        """ Function which extracts anchor links from HTML page content,
+        creates Link object with connected url and name of the advert, 
+        and returns a list of all found andverts. """
         links = []
-        if self._check_are_matching_adverts(content):
-            divs = self._find_adverts_divs(content)
-            for div in divs:
-                anhor = self._find_advert_anhor(div)
-                url, name = self._get_advert_url_and_name(anhor)
-                advert_link = Link(url, name)
-                links.append(advert_link)
+        divs = self._find_adverts_divs(content)
+        for div in divs:
+            anhor = self._find_advert_anhor(div)
+            url, name = self._get_advert_url_and_name(anhor)
+            advert_link = Link(url, name)
+            links.append(advert_link)
         return links
 
 
-    def parse_page_content(self, advert_database, slack):
-        """ Function which fetchs HTML page, shearch in them 
+    def _proccess_adverts_links(self, links, advert_database, slack) -> None:
+        """ Function which inserts each new advert into the database 
+        and send Slack notification. """
+        for link in links:
+            advert_database.insert_new_advert_and_send_notification(link, slack)
+
+
+    def parse_and_proccess_page_content(self, advert_database, slack) -> None:
+        """ Function which fetches HTML page, search in it 
         for the adverts links, store them in the database 
         and send Slack notification. """
         content = self._fetch_page_content()
-        if self.portal == 'olx':
+        if self.portal == 'olx' and self._check_are_matching_olx_adverts(content):
             links = self._get_olx_adverts_links(content)
-            for link in links:
-                advert_database.insert_new_advert_and_send_notification(link, slack)
+            self._proccess_adverts_links(links, advert_database, slack)
