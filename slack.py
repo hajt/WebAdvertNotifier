@@ -1,6 +1,6 @@
 import requests
 import json
-import logging
+from logger import log
 
 class Slack():
 
@@ -17,12 +17,12 @@ class Slack():
 
     def send_message(self, text):
         """ Function which sends Slack message as HTTP POST request. """ 
-        logging.info("Sending message...")
+        log.info("Sending message...")
         response = requests.post(self.webhook_url, data=self._data(text), headers=self.headers)
-        logging.debug(f"Response: {response.text}, code: {str(response.status_code)}")
+        log.debug(f"Response: {response.text}, code: {str(response.status_code)}")
         if response.status_code==200:
-            logging.info("Message succesfully sent!")
+            log.info("Message succesfully sent!")
         else:
-            logging.info("Could not send message")
+            log.info("Could not send message")
 
 

@@ -7,6 +7,7 @@ from advert_database import AdvertDatabase
 from html_parser import HtmlParser
 from config import ConfigFile
 from slack import Slack
+from logger import log
 
 
 def construct_database_url(config):
@@ -36,10 +37,10 @@ def create_advert_database(advert_database):
     """ Function which creates the database if doesn't exist
     and fill her with users and email accounts. """
     if not database_exists(advert_database.database_url):
-        logging.info('Creating database...')
+        log.info('Creating database...')
         create_database(advert_database.database_url)
         Base.metadata.create_all(advert_database.engine)
-        logging.info('Database created!')
+        log.info('Database created!')
 
 
 def scan_filters_for_new_adverts(config, advert_database, slack):
@@ -52,14 +53,8 @@ def scan_filters_for_new_adverts(config, advert_database, slack):
 
 
 if __name__ == "__main__":
+    log.setLevel(logging.INFO)
     config = ConfigFile("config.yaml")
-
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO, handlers=[
-        logging.FileHandler(filename=config.logfile_path, mode='w'),
-        logging.StreamHandler()
-    ])
-    logging.getLogger("client").setLevel(logging.INFO)
-
     advert_database = setup_database(config)
     slack = setup_slack(config)
     create_advert_database(advert_database)

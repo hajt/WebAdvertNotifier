@@ -1,10 +1,10 @@
 import yaml
 import json
 import jsonschema
-import logging
 import os
 import sys
 from typing import Union
+from logger import log
 
 
 class ConfigFile:
@@ -73,20 +73,20 @@ class ConfigFile:
 
     def _is_file_exist(self, path: str) -> bool:
         """ Function which checks is config file exists. """
-        logging.debug("Checking is config file exists.")
+        log.debug("Checking is config file exists.")
         return os.path.isfile(path)
 
 
     def _validate_yaml_content(self, content: dict) -> Union[SystemExit, None]:
         """ Function which validates config file content with schema,
         and exits program when exception occours. """
-        logging.debug("Validating config file...")
+        log.debug("Validating config file...")
         try:
             jsonschema.validate(content, self.schema)
         except jsonschema.ValidationError as err:
-            logging.error(err)
+            log.error(err)
             sys.exit(0)
-        logging.debug("Validation succeeded!")
+        log.debug("Validation succeeded!")
 
 
     def _get_file_content(self, path: str) -> Union[dict, SystemExit]:
@@ -98,5 +98,5 @@ class ConfigFile:
                 self._validate_yaml_content(content)
                 return content
         else:
-            logging.error(f"Not found '{path}' file.")
+            log.error(f"Not found '{path}' file.")
             sys.exit(0)

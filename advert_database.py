@@ -1,6 +1,6 @@
 import sqlalchemy.exc
 import sqlalchemy.orm.exc
-import logging
+from logger import log
 from models import Advert
 
 
@@ -25,10 +25,10 @@ class AdvertDatabase:
         self.session.add(advert)
         try:
             self.session.commit()
-            logging.info(f"Inserted advert into database '{link.url}'")
+            log.info(f"Inserted advert into database '{link.url}'")
         except sqlalchemy.exc.IntegrityError:
             self.session.rollback()
-            logging.error(f"There is already same advert in 'adverts' table.\nInvolved url: '{link.url}'")
+            log.error(f"There is already same advert in 'adverts' table.\nInvolved url: '{link.url}'")
 
 
     def insert_new_advert_and_send_notification(self, link, slack):
@@ -37,10 +37,10 @@ class AdvertDatabase:
         try:
             advert = self._get_advert_by_url(link.url)
         except sqlalchemy.orm.exc.MultipleResultsFound:
-            logging.error(f"Multiple adverts '{link.url}' found in 'adverts' table.")
+            log.error(f"Multiple adverts '{link.url}' found in 'adverts' table.")
         else:      
             if not advert:
-                logging.info(f"Found new advert: {link.name} - '{link.url}'" )
+                log.info(f"Found new advert: {link.name} - '{link.url}'" )
                 self._store_advert(link)
                 slack.send_message(link)
 
