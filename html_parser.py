@@ -2,6 +2,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
+from logger import log
 
 @dataclass
 class Link:
@@ -12,7 +13,7 @@ class Link:
 
 
     def __str__(self) -> str:
-        return f"Name: {self.name}, Url: '{self.url}'"
+        return f"Name: '{self.name}', Url: '{self.url}'"
 
 
 class HtmlParser:
@@ -25,9 +26,12 @@ class HtmlParser:
     
     def _fetch_page_content(self) -> BeautifulSoup:
         """ Function which fetchs HTML page content. """
-        request = requests.get(self.url)
-        content = BeautifulSoup(request.text, "html.parser")
-        return content
+        log.debug(f"Fetching '{self.url}' content.")
+        response = requests.get(self.url)
+        log.debug(f"Response: {response.text}, code: {str(response.status_code)}")
+        if response.status_code == 200:
+            content = BeautifulSoup(response.text, "html.parser")
+            return content
 
 
     def _find_no_adverts_div(self, content: BeautifulSoup):
@@ -98,6 +102,11 @@ class HtmlParser:
         for the adverts links, store them in the database 
         and send Slack notification. """
         content = self._fetch_page_content()
-        if self.portal == 'olx' and self._check_are_matching_olx_adverts(content):
-            links = self._get_olx_adverts_links(content)
-            self._proccess_adverts_links(links, advert_database, slack)
+        if content:
+            log.debug(f"Parsing page content...")
+            if self.portal == 'olx' and self._check_are_matching_olx_adverts(content):
+                links = self._get_olx_adverts_links(content)
+                self._proccess_adverts_links(links, advert_database, slack)
+        else:
+            log.debug(f"No content to parse.")
+
