@@ -19,16 +19,17 @@ class AdvertDatabase:
         return self.session.query(Advert).filter(Advert.url==url).scalar()
 
 
-    def _store_advert(self, link):
+    def _save_advert(self, link):
         """ Function that's creates Advert object, and save to the database. """
         advert = Advert(name=link.name, url=link.url)
         self.session.add(advert)
         try:
             self.session.commit()
-            log.info(f"Inserted advert into database '{link.url}'")
         except sqlalchemy.exc.IntegrityError:
             self.session.rollback()
             log.error(f"There is already same advert in 'adverts' table.\nInvolved url: '{link.url}'")
+        else:
+            log.debug(f"Saved advert in database.")
 
 
     def insert_new_advert_and_send_notification(self, link, slack):
@@ -40,8 +41,8 @@ class AdvertDatabase:
             log.error(f"Multiple adverts '{link.url}' found in 'adverts' table.")
         else:      
             if not advert:
-                log.info(f"Found new advert: {link.name} - '{link.url}'" )
-                self._store_advert(link)
+                log.info(f"Found new advert: '{link.name}' - '{link.url}'" )
+                self._save_advert(link)
                 slack.send_message(link)
 
 

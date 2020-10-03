@@ -28,7 +28,7 @@ class HtmlParser:
         """ Function which fetchs HTML page content. """
         log.debug(f"Fetching '{self.url}' content.")
         response = requests.get(self.url)
-        log.debug(f"Response: {response.text}, code: {str(response.status_code)}")
+        log.debug(f"Response code: {str(response.status_code)}")
         if response.status_code == 200:
             content = BeautifulSoup(response.text, "html.parser")
             return content

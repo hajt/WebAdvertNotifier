@@ -19,10 +19,10 @@ class Slack():
         """ Function which sends Slack message as HTTP POST request. """ 
         log.info("Sending message...")
         response = requests.post(self.webhook_url, data=self._data(text), headers=self.headers)
-        log.debug(f"Response: {response.text}, code: {str(response.status_code)}")
+        log.debug(f"Response code: {str(response.status_code)}")
         if response.status_code==200:
             log.info("Message succesfully sent!")
         else:
-            log.info("Could not send message")
+            log.info("Message cannot be sent.")
 
 
