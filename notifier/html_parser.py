@@ -2,10 +2,10 @@ import requests
 import re
 from bs4 import BeautifulSoup, element
 from typing import List, Tuple
-from link import Link
-from advert_database import AdvertDatabase
-from slack import Slack
-from logger import log
+from notifier.link import Link
+from notifier.advert_database import AdvertDatabase
+from notifier.slack import Slack
+from notifier.logger import log
 
 
 class HtmlParser:

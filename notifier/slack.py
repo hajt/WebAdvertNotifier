@@ -1,6 +1,6 @@
 import requests
 import json
-from logger import log
+from notifier.logger import log
 
 class Slack():
 

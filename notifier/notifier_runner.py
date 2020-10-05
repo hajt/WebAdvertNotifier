@@ -3,12 +3,12 @@ import logging
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base
-from advert_database import AdvertDatabase
-from html_parser import HtmlParser
-from config import ConfigFile
-from slack import Slack
-from logger import log
+from notifier.models import Base
+from notifier.advert_database import AdvertDatabase
+from notifier.html_parser import HtmlParser
+from notifier.config import ConfigFile
+from notifier.slack import Slack
+from notifier.logger import log
 
 
 def construct_database_url(config: ConfigFile) -> str:

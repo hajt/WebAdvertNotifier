@@ -4,7 +4,7 @@ import jsonschema
 import os
 import sys
 from typing import Union, Dict, List
-from logger import log
+from notifier.logger import log
 
 
 class ConfigFile:

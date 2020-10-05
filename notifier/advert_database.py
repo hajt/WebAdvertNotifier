@@ -1,9 +1,9 @@
 import sqlalchemy.exc
 import sqlalchemy.orm.exc
-from logger import log
-from models import Advert
-from link import Link
-from slack import Slack
+from notifier.logger import log
+from notifier.models import Advert
+from notifier.link import Link
+from notifier.slack import Slack
 
 
 class AdvertDatabase:
@@ -46,6 +46,3 @@ class AdvertDatabase:
                 log.info(f"Found new advert: '{link.name}' - '{link.url}'" )
                 self._save_advert(link)
                 slack.send_message(link)
-
-
-
