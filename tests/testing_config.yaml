@@ -1,0 +1,10 @@
+slack:
+  webhook_url: https://test.com
+database:
+  path: test.db
+filters:
+  olx:
+    - https://www.olx.pl/test
+    - https://www.olx.pl/test2
+logfile:
+  path: test.log
