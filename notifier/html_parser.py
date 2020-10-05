@@ -34,9 +34,11 @@ class HtmlParser:
     def _find_no_adverts_text(self, content: BeautifulSoup) -> element.ResultSet:
         """ Function which search for all 'no adverts' known 
         text in HTML page content. """
-        not_found = re.compile("Nie znaleźliśmy ogłoszeń dla tego zapytania.")
+        not_found = re.compile("Nie znaleźliśmy ogłoszeń dla tego zapytania")
         validate_query = re.compile("Sprawdź poprawność albo spróbuj bardziej ogólnego zapytania")
-        return content.find_all(string=[not_found, validate_query])
+        no_records = re.compile("Brak wyników")
+        change_parameters = re.compile("Spróbuj zmienić parametry")
+        return content.find_all(string=[not_found, validate_query, no_records, change_parameters])
 
 
     def _check_are_matching_olx_adverts(self, content: BeautifulSoup) -> bool:
@@ -99,6 +101,7 @@ class HtmlParser:
             if self.portal == 'olx' and self._check_are_matching_olx_adverts(content):
                 links = self._get_olx_adverts_links(content)
                 self._proccess_adverts_links(links, advert_database, slack)
+            log.debug(f"Parsing finished.")  
         else:
             log.debug(f"No content to parse.")
 
