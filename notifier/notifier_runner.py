@@ -1,5 +1,7 @@
-from __future__ import annotations
+import argparse
 import logging
+import sys
+import time
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -53,10 +55,44 @@ def scan_filters_for_new_adverts(config: ConfigFile, advert_database: AdvertData
             html_parser.parse_and_proccess_page_content(advert_database, slack)
 
 
-if __name__ == "__main__":
-    log.setLevel(logging.INFO)
+def scan_filters_for_new_adverts_loop(config: ConfigFile, advert_database: AdvertDatabase, slack: Slack, interval: int) -> None:
+    """ Function which creates loop with time interval 
+    for function scan_filters_for_new_adverts(). """
+    while True:
+        scan_filters_for_new_adverts(config, advert_database, slack)
+        time.sleep(interval)
+
+
+def create_argparser() -> argparse.Namespace:
+    """ Function which creates argparser and return arguments. """
+    parser = argparse.ArgumentParser(description='Web Adverts Notifier')
+    parser.add_argument("-c", "--collect", action="store_true", help="check stored filters for new adverds")
+    parser.add_argument("-i", "--interval", type=int, help="periodically check stored filters for new adverts with provided interval (in seconds)")
+    parser.add_argument("--debug", action="store_true", help="debug flag")
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    args = parser.parse_args()
+    return args
+
+
+def notifier_main() -> None:
+    """ Main function of notifier. """
+    args = create_argparser()
+    log.setLevel(logging.DEBUG if args.debug else logging.INFO)
+
     config = ConfigFile("config.yaml")
     advert_database = setup_database(config)
     slack = setup_slack(config)
     create_advert_database(advert_database)
-    scan_filters_for_new_adverts(config, advert_database, slack)
+    
+    if args.collect:
+        scan_filters_for_new_adverts(config, advert_database, slack)
+    elif args.interval:
+        scan_filters_for_new_adverts_loop(config, advert_database, slack, args.interval)
+
+
+if __name__ == "__main__":
+    notifier_main()
+
+
