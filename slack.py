@@ -4,18 +4,18 @@ from logger import log
 
 class Slack():
 
-    def __init__(self, webhook_url):
+    def __init__(self, webhook_url: str) -> None:
         """ Slack sender notifications class. """ 
         self.webhook_url = webhook_url
         self.headers = {'Content-Type': 'application/json'}
 
 
-    def _data(self, text):
+    def _data(self, text: str) -> str:
         """ Message text wrapper for request.post(data) argument. """
         return json.dumps({'text': f'{text}'})
 
 
-    def send_message(self, text):
+    def send_message(self, text: str) -> None:
         """ Function which sends Slack message as HTTP POST request. """ 
         log.info("Sending message...")
         response = requests.post(self.webhook_url, data=self._data(text), headers=self.headers)

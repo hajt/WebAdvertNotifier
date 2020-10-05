@@ -25,7 +25,7 @@ class Logger(object, metaclass=Singleton):
         streamHandler.setFormatter(formatter)
         self._logger.addHandler(streamHandler)
 
-    def get_logger(self):
+    def get_logger(self) -> logging.RootLogger:
         return self._logger
 
 log = Logger.__call__().get_logger()

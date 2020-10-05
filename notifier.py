@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy import create_engine
@@ -10,13 +11,13 @@ from slack import Slack
 from logger import log
 
 
-def construct_database_url(config):
+def construct_database_url(config: ConfigFile) -> str:
     """ Function which returns database url from config data. """
     database_url = f"sqlite:///{config.database_path}"
     return database_url
 
 
-def setup_database(config):
+def setup_database(config: ConfigFile) -> AdvertDatabase:
     """ Function which configure database settings, and returns 
     database_url, engine and session objects. """
     database_url = construct_database_url(config)          
@@ -27,13 +28,13 @@ def setup_database(config):
     return advert_database
 
 
-def setup_slack(config):
+def setup_slack(config: ConfigFile) -> Slack:
     """ Function which configure Slack to send messages. """
     slack = Slack(config.slack_webhook_url)
     return slack
 
 
-def create_advert_database(advert_database):
+def create_advert_database(advert_database: AdvertDatabase) -> None:
     """ Function which creates the database if doesn't exist
     and fill her with users and email accounts. """
     if not database_exists(advert_database.database_url):
@@ -43,7 +44,7 @@ def create_advert_database(advert_database):
         log.info('Database created!')
 
 
-def scan_filters_for_new_adverts(config, advert_database, slack):
+def scan_filters_for_new_adverts(config: ConfigFile, advert_database: AdvertDatabase, slack: Slack) -> None:
     """ Function which scan given website filters for new adverts,
     and updates the database. """
     for portal, links in config.filters.items():

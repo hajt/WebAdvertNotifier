@@ -2,24 +2,26 @@ import sqlalchemy.exc
 import sqlalchemy.orm.exc
 from logger import log
 from models import Advert
+from link import Link
+from slack import Slack
 
 
 class AdvertDatabase:
 
-    def __init__(self, database_url, engine, session):
+    def __init__(self, database_url: str, engine: sqlalchemy.engine.base.Engine, session: sqlalchemy.orm.session.Session) -> None:
         """ Database 'adverts' table model class. """ 
         self.database_url = database_url
         self.engine = engine
         self.session = session
 
 
-    def _get_advert_by_url(self, url):
+    def _get_advert_by_url(self, url: str) -> Advert: 
         """ Function that's query the database for advert by url, and returns 
         Advert object if exist or raises Exception, when error occurs. """
         return self.session.query(Advert).filter(Advert.url==url).scalar()
 
 
-    def _save_advert(self, link):
+    def _save_advert(self, link: Link) -> None:
         """ Function that's creates Advert object, and save to the database. """
         advert = Advert(name=link.name, url=link.url)
         self.session.add(advert)
@@ -32,7 +34,7 @@ class AdvertDatabase:
             log.debug(f"Saved advert in database.")
 
 
-    def insert_new_advert_and_send_notification(self, link, slack):
+    def insert_new_advert_and_send_notification(self, link: Link, slack: Slack) -> None:
         """ Function which inserts new advert into database and sends  
         Slack notification message. """
         try:

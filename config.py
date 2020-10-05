@@ -3,7 +3,7 @@ import json
 import jsonschema
 import os
 import sys
-from typing import Union
+from typing import Union, Dict, List
 from logger import log
 
 
@@ -77,7 +77,7 @@ class ConfigFile:
         return os.path.isfile(path)
 
 
-    def _validate_yaml_content(self, content: dict) -> Union[SystemExit, None]:
+    def _validate_yaml_content(self, content: Dict) -> Union[SystemExit, None]:
         """ Function which validates config file content with schema,
         and exits program when exception occours. """
         log.debug("Validating config file...")
@@ -89,7 +89,7 @@ class ConfigFile:
         log.debug("Validation succeeded!")
 
 
-    def _get_file_content(self, path: str) -> Union[dict, SystemExit]:
+    def _get_file_content(self, path: str) -> Union[Dict, SystemExit]:
         """ Function which reads config file, checks is validate and 
         returns content, or exit program when config file doesn't exists. """
         if self._is_file_exist(path):
