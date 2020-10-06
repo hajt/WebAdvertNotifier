@@ -1,5 +1,6 @@
 import sqlalchemy.exc
 import sqlalchemy.orm.exc
+
 from notifier.logger import log
 from notifier.models import Advert
 from notifier.link import Link
@@ -29,7 +30,7 @@ class AdvertDatabase:
             self.session.commit()
         except sqlalchemy.exc.IntegrityError:
             self.session.rollback()
-            log.error(f"There is already same advert in 'adverts' table.\nInvolved url: '{link.url}'")
+            log.warning(f"There is already same advert in 'adverts' table.\nInvolved url: '{link.url}'")
         else:
             log.debug(f"Saved advert in database.")
 
@@ -45,4 +46,5 @@ class AdvertDatabase:
             if not advert:
                 log.info(f"Found new advert: '{link.name}' - '{link.url}'" )
                 self._save_advert(link)
-                slack.send_message(link)
+                hyperlink = link.to_slack_hyperlink()
+                slack.send_message(hyperlink)

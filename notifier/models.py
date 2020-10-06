@@ -13,5 +13,5 @@ class Advert(Base):
     url = Column(String(150), unique=True)
 
     def __repr__(self) -> str:
-        return "<Advert(name='%s', url='%s')>" % (self.name, self.url)
+        return f"<Advert(name={self.name}, url={self.url})>"
 

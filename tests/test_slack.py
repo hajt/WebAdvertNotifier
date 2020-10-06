@@ -12,8 +12,8 @@ class TestSlack(unittest.TestCase):
         self.slack = Slack(webhook_url)
 
 
-    def test_data(self):
-        result = self.slack._data('message')
+    def test_to_json(self):
+        result = self.slack._to_json('message')
         expected = json.dumps({'text': 'message'})
         self.assertEqual(result, expected)
 

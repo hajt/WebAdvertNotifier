@@ -9,4 +9,9 @@ class Link:
 
 
     def __str__(self) -> str:
-        return f"Name: '{self.name}', Url: '{self.url}'"
+        return f'Name: "{self.name}" URL: {self.url}'
+
+
+    def to_slack_hyperlink(self) -> str:
+        """ Function that returns a Slack hyperlink. """
+        return f"<{self.url}|{self.name}>"

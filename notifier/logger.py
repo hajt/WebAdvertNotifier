@@ -12,7 +12,7 @@ class Singleton(type):
 
 class Logger(object, metaclass=Singleton):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._logger = logging.getLogger()
         self._logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')

@@ -163,47 +163,47 @@ class TestHtmlParser(unittest.TestCase):
         self.assertEqual(result, 1)
 
 
-    def test_check_are_matching_olx_adverts_no_adverts_div_and_no_adverts_text_in_content(self):
+    def test_check_matching_olx_adverts_no_adverts_div_and_no_adverts_text_in_content(self):
         text = """
         <div class="emptynew emptynew-filters large lheight18">
         Nie znaleźliśmy ogłoszeń dla tego zapytania.
         </div> 
         """
         test_content = BeautifulSoup(text, "html.parser")
-        status = self.html_paser._check_are_matching_olx_adverts(test_content)
+        status = self.html_paser._check_matching_olx_adverts(test_content)
         self.assertFalse(status)
 
 
-    def test_check_are_matching_olx_adverts_no_adverts_div_and_no_adverts_text_not_in_content(self):
+    def test_check_matching_olx_adverts_no_adverts_div_and_no_adverts_text_not_in_content(self):
         text = """
         <div>
         Example content.
         </div> 
         """
         test_content = BeautifulSoup(text, "html.parser")
-        status = self.html_paser._check_are_matching_olx_adverts(test_content)
+        status = self.html_paser._check_matching_olx_adverts(test_content)
         self.assertTrue(status)
 
     
-    def test_check_are_matching_olx_adverts_no_adverts_div_and_not_no_adverts_text_in_content(self):
+    def test_check_matching_olx_adverts_no_adverts_div_and_not_no_adverts_text_in_content(self):
         text = """
         <div class="emptynew emptynew-filters large lheight18">
         Example content.
         </div> 
         """
         test_content = BeautifulSoup(text, "html.parser")
-        status = self.html_paser._check_are_matching_olx_adverts(test_content)
+        status = self.html_paser._check_matching_olx_adverts(test_content)
         self.assertFalse(status)
 
 
-    def test_check_are_matching_olx_adverts_not_no_adverts_div_and_no_adverts_text_in_content(self):
+    def test_check_matching_olx_adverts_not_no_adverts_div_and_no_adverts_text_in_content(self):
         text = """
         <div>
         Nie znaleźliśmy ogłoszeń dla tego zapytania.
         </div> 
         """
         test_content = BeautifulSoup(text, "html.parser")
-        status = self.html_paser._check_are_matching_olx_adverts(test_content)
+        status = self.html_paser._check_matching_olx_adverts(test_content)
         self.assertFalse(status)
     
 
@@ -324,7 +324,7 @@ class TestHtmlParser(unittest.TestCase):
 
 
     @patch('notifier.slack.requests.post')
-    def test_proccess_adverts_links_are_valid_links(self, mock_requests_post):
+    def test_proccess_adverts_links_valid_links(self, mock_requests_post):
         logging.disable(logging.NOTSET)
 
         link = Link('url', 'name')
@@ -350,7 +350,7 @@ class TestHtmlParser(unittest.TestCase):
 
     @patch('notifier.slack.requests.post')
     @patch('notifier.html_parser.requests.get')
-    def test_parse_and_proccess_page_content_are_valid_content(self, mock_html_parser_requests_get, mock_slack_requests_post):
+    def test_proccess_page_content_valid_content(self, mock_html_parser_requests_get, mock_slack_requests_post):
         logging.disable(logging.NOTSET)
   
         database_url = 'sqlite:///:memory:'
@@ -375,12 +375,12 @@ class TestHtmlParser(unittest.TestCase):
         log_message = 'INFO:root:Message succesfully sent!'
 
         with self.assertLogs(level='DEBUG') as cm:
-            self.html_paser.parse_and_proccess_page_content(advert_database, slack)
+            self.html_paser.proccess_page_content(advert_database, slack)
         self.assertIn(log_message, cm.output)
 
 
     @patch('notifier.html_parser.requests.get')
-    def test_parse_and_proccess_page_content_not_valid_content(self, mock_requests_get):
+    def test_proccess_page_content_not_valid_content(self, mock_requests_get):
         logging.disable(logging.NOTSET)
   
         database_url = 'sqlite:///:memory:'
@@ -397,7 +397,7 @@ class TestHtmlParser(unittest.TestCase):
         log_message = 'DEBUG:root:No content to parse.'
 
         with self.assertLogs(level='DEBUG') as cm:
-            self.html_paser.parse_and_proccess_page_content(advert_database, slack)
+            self.html_paser.proccess_page_content(advert_database, slack)
         self.assertIn(log_message, cm.output)
 
      

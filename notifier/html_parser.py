@@ -1,7 +1,9 @@
 import requests
 import re
+
 from bs4 import BeautifulSoup, element
 from typing import List, Tuple
+
 from notifier.link import Link
 from notifier.advert_database import AdvertDatabase
 from notifier.slack import Slack
@@ -41,7 +43,7 @@ class HtmlParser:
         return content.find_all(string=[not_found, validate_query, no_records, change_parameters])
 
 
-    def _check_are_matching_olx_adverts(self, content: BeautifulSoup) -> bool:
+    def _check_matching_olx_adverts(self, content: BeautifulSoup) -> bool:
         """ Function which checks are matching adverts in HTML page content 
         by checking are 'no adverts div' or 'no adverts text' and returns 
         'True' when not. """
@@ -91,14 +93,14 @@ class HtmlParser:
             advert_database.insert_new_advert_and_send_notification(link, slack)
 
 
-    def parse_and_proccess_page_content(self, advert_database: AdvertDatabase, slack: Slack) -> None:
+    def proccess_page_content(self, advert_database: AdvertDatabase, slack: Slack) -> None:
         """ Function which fetches HTML page, search in it 
         for the adverts links, store them in the database 
         and send Slack notification. """
         content = self._fetch_page_content()
         if content:
             log.debug(f"Parsing page content...")
-            if self.portal == 'olx' and self._check_are_matching_olx_adverts(content):
+            if self.portal == 'olx' and self._check_matching_olx_adverts(content):
                 links = self._get_olx_adverts_links(content)
                 self._proccess_adverts_links(links, advert_database, slack)
             log.debug(f"Parsing finished.")  
