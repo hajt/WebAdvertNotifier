@@ -2,15 +2,47 @@ import argparse
 import logging
 import sys
 import time
+import signal
+
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from types import FrameType
+from typing import Optional
+
 from notifier.models import Base
 from notifier.advert_database import AdvertDatabase
 from notifier.html_parser import HtmlParser
 from notifier.config import ConfigFile
 from notifier.slack import Slack
 from notifier.logger import log
+
+
+class ProgramStopper:
+    """ Program exit handler. """
+    exit_ = False
+    _signals = 0
+    
+    def __init__(self) -> None:
+        signal.signal(signal.SIGINT, self._exit_program)
+        signal.signal(signal.SIGTERM, self._exit_program)
+
+
+    def _set_exit_flag(self) -> None:
+        """ Function which set program exit flag to True and 
+        inform about program exit signal. """
+        if self.exit_ is False:
+            self.exit_ = True
+            log.info('Received program exit signal')
+
+
+    def _exit_program(self, signum: int, frame: FrameType) -> Optional[SystemExit]:
+        """ Function which handle safe and immediately exit of program. """
+        self._set_exit_flag()
+        self._signals += 1
+        if self._signals > 1:
+            log.error('Program interrupt!')
+            sys.exit(0)
 
 
 def construct_database_url(config: ConfigFile) -> str:
@@ -49,16 +81,20 @@ def create_advert_database(advert_database: AdvertDatabase) -> None:
 def scan_filters_for_new_adverts(config: ConfigFile, advert_database: AdvertDatabase, slack: Slack) -> None:
     """ Function which scan given website filters for new adverts,
     and updates the database. """
-    for portal, links in config.filters.items():
-        for link in links:
-            html_parser = HtmlParser(link, portal)
-            html_parser.parse_and_proccess_page_content(advert_database, slack)
+    stopper = ProgramStopper()
+    while not stopper.exit_:
+        for portal, links in config.filters.items():
+            for link in links:
+                html_parser = HtmlParser(link, portal)
+                html_parser.proccess_page_content(advert_database, slack)
+        sys.exit(0)
 
 
 def scan_filters_for_new_adverts_loop(config: ConfigFile, advert_database: AdvertDatabase, slack: Slack, interval: int) -> None:
     """ Function which creates loop with time interval 
     for function scan_filters_for_new_adverts(). """
-    while True:
+    stopper = ProgramStopper()
+    while not stopper.exit_:
         scan_filters_for_new_adverts(config, advert_database, slack)
         time.sleep(interval)
 
@@ -76,7 +112,7 @@ def create_argparser() -> argparse.Namespace:
     return args
 
 
-def notifier_main() -> None:
+def main() -> None:
     """ Main function of notifier. """
     args = create_argparser()
     log.setLevel(logging.DEBUG if args.debug else logging.INFO)
@@ -91,8 +127,10 @@ def notifier_main() -> None:
     elif args.interval:
         scan_filters_for_new_adverts_loop(config, advert_database, slack, args.interval)
 
+    log.info('Program finished.')
+
 
 if __name__ == "__main__":
-    notifier_main()
+    main()
 
 
