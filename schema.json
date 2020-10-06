@@ -1,0 +1,36 @@
+{
+    "type": "object",
+    "required": ["slack", "database", "logfile", "filters"],
+    "properties": {
+        "slack": {
+            "type": "object",
+            "required": ["webhook_url"],
+            "properties": {
+                "webhook_url": {
+                    "type": "string"
+                } 
+            }
+        },
+        "database": {
+            "type": "object",
+            "required": ["path"],
+            "properties": {
+                "path": {
+                    "type": "string"
+                } 
+            }
+        },
+        "filters": {
+            "type": "object",
+            "required": ["olx"],
+            "properties": {
+                "olx": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                } 
+            }
+        }
+    }
+}

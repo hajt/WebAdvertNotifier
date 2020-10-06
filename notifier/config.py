@@ -3,62 +3,20 @@ import json
 import jsonschema
 import os
 import sys
-from typing import Union, Dict, List
+
+from typing import Union, Dict, List, Optional
+
 from notifier.logger import log
 
 
 class ConfigFile:
+    _schema_path = 'schema.json'
 
     def __init__(self, path: str) -> None:
         """ Config YAML file class. """ 
-        self.schema = {
-            "type": "object",
-            "required": ["slack", "database", "logfile", "filters"],
-            "properties": {
-                "slack": {
-                    "type": "object",
-                    "required": ["webhook_url"],
-                    "properties": {
-                        "webhook_url": {
-                            "type": "string"
-                        } 
-                    }
-                },
-                "database": {
-                    "type": "object",
-                    "required": ["path"],
-                    "properties": {
-                        "path": {
-                            "type": "string"
-                        } 
-                    }
-                },
-                "logfile": {
-                    "type": "object",
-                    "required": ["path"],
-                    "properties": {
-                        "path": {
-                            "type": "string"
-                        } 
-                    }
-                },
-                "filters": {
-                    "type": "object",
-                    "required": ["olx"],
-                    "properties": {
-                        "olx": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        } 
-                    }
-                }
-            }
-        }
+        self.schema = self._get_schema()
         self.content = self._get_file_content(path)
         self.slack_webhook_url = self.content['slack']['webhook_url']
-        self.logfile_path = self.content['logfile']['path']
         self.database_path = self.content['database']['path']
         self.filters = self.content['filters']
 
@@ -72,12 +30,23 @@ class ConfigFile:
 
 
     def _is_file_exist(self, path: str) -> bool:
-        """ Function which checks is config file exists. """
-        log.debug("Checking is config file exists.")
+        """ Function which checks is file exists. """
+        log.debug(f"Checking is '{path}' file exists.")
         return os.path.isfile(path)
 
+    
+    def _get_schema(self) -> Optional[Dict[str, Dict[str, Union[str, List[str]]]]]:
+        """ Function which reads json schema file and returns content, 
+        or raises excepion when schema file doesn't exists. """
+        if self._is_file_exist(self._schema_path):
+            with open(self._schema_path, 'r') as file:
+                content = json.load(file)
+                return content
+        else:
+            raise FileNotFoundError("No schema file found.")
 
-    def _validate_yaml_content(self, content: Dict) -> Union[SystemExit, None]:
+
+    def _validate_yaml_content(self, content: Dict[str, Dict[str, Union[str, List[str]]]]) -> Optional[SystemExit]:
         """ Function which validates config file content with schema,
         and exits program when exception occours. """
         log.debug("Validating config file...")
@@ -89,7 +58,7 @@ class ConfigFile:
         log.debug("Validation succeeded!")
 
 
-    def _get_file_content(self, path: str) -> Union[Dict, SystemExit]:
+    def _get_file_content(self, path: str) -> Union[Dict[str, Dict[str, Union[str, List[str]]]], SystemExit]:
         """ Function which reads config file, checks is validate and 
         returns content, or exit program when config file doesn't exists. """
         if self._is_file_exist(path):

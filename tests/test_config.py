@@ -63,12 +63,10 @@ class ConfigFileTests(unittest.TestCase):
         with open(self.valid_path, 'r') as file:
             test_content = yaml.full_load(file)
         test_slack_webhook_url = 'https://test.com'
-        test_logfile_path = 'test.log'
         test_database_path = 'test.db'
         test_filters = {'olx': ['https://www.olx.pl/test', 'https://www.olx.pl/test2']}
         self.assertEqual(self.config_file.content, test_content)
         self.assertEqual(self.config_file.slack_webhook_url, test_slack_webhook_url)
-        self.assertEqual(self.config_file.logfile_path, test_logfile_path)
         self.assertEqual(self.config_file.database_path, test_database_path)
         self.assertEqual(self.config_file.filters, test_filters)
         
